@@ -149,7 +149,7 @@ class HTB_Challenge(_HTB_BaseObject):
 		if str_categorie==None:
 			if not isinstance(categorie,int):
 				raise Error("Categorie should be an integer of the categorie id")
-			categories = ["Reverse","Crypto","","Pwn","Web","Misc","Forensic","Mobile","","Hardware","GamePwn","Blockchain"]
+			categories = ["Reverse","Crypto","","Pwn","Web","Misc","Forensic","Mobile","","Hardware","GamePwn","Blockchain","","","","","","","","","AI-ML"]
 			self.categorie = categories[categorie-1]
 		else:
 			self.categorie = str_categorie
@@ -250,12 +250,13 @@ class HTB_Univ_Fetcher():
 		@Output : dict
 		@Todo : Remove recursion
 		"""
+		print(ENDPOINT)
 		g = get(ENDPOINT,headers={"Accept":"application/json","Authorization":f"Bearer {self.KEY}", "User-Agent":"ensibs/gcc"})
 		res = g.json()
 		if "message" in res and res["message"] == "Too Many Attempts.":
 			from time import sleep
-			print("Too Many Attempts. Sleep for 3 secs.")
-			sleep(3) # Wait 3 secs and retry
+			print("Too Many Attempts. Sleep for 20 secs.")
+			sleep(20) # Wait 3 secs and retry
 			return self.__do_get(ENDPOINT)
 		return res
 
@@ -348,9 +349,10 @@ class HTB_Univ_Fetcher():
 		"""
 		ENDPOINT = "https://www.hackthebox.com/api/v4/fortresses"
 		fetch_res = self.__do_get(ENDPOINT)
+		print(fetch_res)
 		for fortress_pseudo_id in fetch_res["data"]:
 			HTB_Fortress(int(fetch_res["data"][fortress_pseudo_id]['id']),fetch_res["data"][fortress_pseudo_id]["name"])
-		
+
 def sort_by_difficulty(c : _HTB_BaseObject) -> int:
 	l = ["Very Easy","Easy","Medium","Hard","Insane"]
 	return l.index(c.get_difficulty())
@@ -364,8 +366,8 @@ if __name__ == "__main__":
 	from requests import get
 	import argparse
 	parser = argparse.ArgumentParser(prog='HUCT - HTB University Completion Tracker',\
-                    description='A simple python script to track the completion of challenges, boxs and fortresses of universities on HackTheBox website.',\
-                    epilog='Made with love for GCC-ENSIBS by Drahoxx 🫶')
+					description='A simple python script to track the completion of challenges, boxs and fortresses of universities on HackTheBox website.',\
+					epilog='Made with love for GCC-ENSIBS by Drahoxx 🫶')
 	parser.add_argument("university_id", help="The university id you want to track the completion of.")
 	parser.add_argument("api_key",help="The HTB api key (Profile -> Settings -> App Tokens). Tips: Use $(cat .api_key)")
 	parser.add_argument("-q","--quiet",help="Remove all informational prints",action="store_true")
