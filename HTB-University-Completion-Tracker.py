@@ -7,6 +7,13 @@
 @Date : 4 dec. 2023
 """
 
+import logging
+from requests import get
+import argparse
+from time import sleep
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 """
 Global lists of all machines, challenges and fortess that exist on HTB
@@ -253,13 +260,12 @@ class HTB_Univ_Fetcher():
 		@Output : dict
 		@Todo : Remove recursion
 		"""
-		print(ENDPOINT)
+		logger.debug(f"Fetching... {ENDPOINT}")
 		g = get(ENDPOINT,headers={"Accept":"application/json","Authorization":f"Bearer {self.KEY}", "User-Agent":"ensibs/gcc"})
 		res = g.json()
 		if "message" in res and res["message"] == "Too Many Attempts.":
-			from time import sleep
-			print("Too Many Attempts. Sleep for 20 secs.")
-			sleep(20) # Wait 3 secs and retry
+			logger.warning("Too Many Attempts. Sleeping for 20 seconds.")
+			sleep(20) # Wait 20 secs and retry
 			return self.__do_get(ENDPOINT)
 		return res
 
@@ -296,6 +302,7 @@ class HTB_Univ_Fetcher():
 			elif activity["object_type"] == "fortress":
 				player.flag_fortress(activity["id"])
 			else:
+				logger.error(f'Unknown object_type: {activity["object_type"]}. An unknown object_type has been encountered in the update_challenges_own_by_player function. Maybe HackTheBox added a new type of challenge?')
 				raise Exception('Unknown object_type', 'An unknown object_type has been encountered in the update_challenges_own_by_player function. Maybe HackTheBox added a new type of challenge ?')
 
 	def fetch_all_challenges(self):
@@ -304,22 +311,24 @@ class HTB_Univ_Fetcher():
 		"""
 		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list"
 		fetch_res = self.__do_get(ENDPOINT)
+		logger.debug(f"Result for active challenge: {fetch_res}")
 		for challenge in fetch_res["challenges"]:
-			# Debug: print category ID if it's unexpected
+			# Debug: log category ID if it's unexpected
 			cat_id = challenge["challenge_category_id"]
 			if cat_id < 1 or cat_id > 22:
-				print(f"Warning: Unexpected category ID {cat_id} for challenge {challenge['name']}")
+				logger.warning(f"Unexpected category ID {cat_id} for challenge {challenge['name']}")
 			HTB_Challenge(challenge['id'],challenge["name"],False,challenge["difficulty"], categorie=challenge["challenge_category_id"])
 		"""
 		List Retired Challenges
 		"""
 		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list/retired"
 		fetch_res = self.__do_get(ENDPOINT)
+		logger.debug(f"Result for retired challenge: {fetch_res}")
 		for challenge in fetch_res["challenges"]:
-			# Debug: print category ID if it's unexpected
+			# Debug: log category ID if it's unexpected
 			cat_id = challenge["challenge_category_id"]
 			if cat_id < 1 or cat_id > 22:
-				print(f"Warning: Unexpected category ID {cat_id} for challenge {challenge['name']}")
+				logger.warning(f"Unexpected category ID {cat_id} for challenge {challenge['name']}")
 			HTB_Challenge(challenge['id'],challenge["name"],True,challenge["difficulty"], categorie=challenge["challenge_category_id"])
 
 	def fetch_all_machines(self):
@@ -331,6 +340,7 @@ class HTB_Univ_Fetcher():
 		while True:
 			ENDPOINT = base_endoint+str(page_index)
 			fetch_res = self.__do_get(ENDPOINT)
+			logger.debug(f"Result for active machine: {fetch_res}")
 			for machine in fetch_res["data"]:
 				HTB_Machine(machine['id'],machine['name'],False,machine['difficultyText'])
 			last_page = int(fetch_res["meta"]["last_page"])
@@ -346,6 +356,7 @@ class HTB_Univ_Fetcher():
 		while True:
 			ENDPOINT = base_endoint+str(page_index)
 			fetch_res = self.__do_get(ENDPOINT)
+			logger.debug(f"Result for retired machine: {fetch_res}")
 			for machine in fetch_res["data"]:
 				HTB_Machine(machine['id'],machine['name'],True,machine['difficultyText'])
 			last_page = int(fetch_res["meta"]["last_page"])
@@ -360,7 +371,7 @@ class HTB_Univ_Fetcher():
 		"""
 		ENDPOINT = "https://www.hackthebox.com/api/v4/fortresses"
 		fetch_res = self.__do_get(ENDPOINT)
-		print(fetch_res)
+		logger.debug(f"Result for fortress: {fetch_res}")
 		for fortress_pseudo_id in fetch_res["data"]:
 			HTB_Fortress(int(fetch_res["data"][fortress_pseudo_id]['id']),fetch_res["data"][fortress_pseudo_id]["name"])
 
@@ -374,34 +385,45 @@ if __name__ == "__main__":
 	"""
 	Parsing args
 	"""
-	from requests import get
-	import argparse
 	parser = argparse.ArgumentParser(prog='HUCT - HTB University Completion Tracker',\
 					description='A simple python script to track the completion of challenges, boxs and fortresses of universities on HackTheBox website.',\
 					epilog='Made with love for GCC-ENSIBS by Drahoxx 🫶')
 	parser.add_argument("university_id", help="The university id you want to track the completion of.")
 	parser.add_argument("api_key",help="The HTB api key (Profile -> Settings -> App Tokens). Tips: Use $(cat .api_key)")
-	parser.add_argument("-q","--quiet",help="Remove all informational prints",action="store_true")
+	parser.add_argument("-q","--quiet",help="Set logging level to ERROR (only show errors)",action="store_true")
+	parser.add_argument("-v","--verbose",help="Set logging level to DEBUG (show all debug information)",action="store_true")
 	args = parser.parse_args()
+
+	# Configure logging based on arguments
+	if args.quiet:
+		log_level = logging.ERROR
+	elif args.verbose:
+		log_level = logging.DEBUG
+	else:
+		log_level = logging.INFO
+
+	logging.basicConfig(
+		level=log_level,
+		format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+		datefmt='%Y-%m-%d %H:%M:%S'
+	)
 
 	"""
 	Fetching the database
 	"""
-	if not args.quiet: print("Starting fetching data.")
+	logger.info("Starting fetching data.")
 	fetcher = HTB_Univ_Fetcher(args.api_key,args.university_id)
 	fetcher.fetch_all_fortress()
-	if not args.quiet: print(f"{len(FORTRESS)} fortresses fetched.")
+	logger.info(f"{len(FORTRESS)} fortresses fetched.")
 	fetcher.fetch_all_machines()
-	if not args.quiet: print(f"{len(MACHINES)} machines fetched.")
+	logger.info(f"{len(MACHINES)} machines fetched.")
 	fetcher.fetch_all_challenges()
-	if not args.quiet: print(f"{len(CHALLENGES)} challenges fetched.")
-	if not args.quiet: print(f"Now fetching the university members.")
+	logger.info(f"{len(CHALLENGES)} challenges fetched.")
+	logger.info("Now fetching the university members.")
 	members=fetcher.get_university_members()
-	if not args.quiet:
-		print(f"Members of the university are: {members}")
+	logger.info(f"Members of the university are: {members}")
 	for member in members:
-		if not args.quiet:
-			print(f"Fetching {member.id} : {member.name}")
+		logger.info(f"Fetching {member.id} : {member.name}")
 		fetcher.update_challenges_own_by_player(member)
 
 	"""
@@ -433,4 +455,3 @@ if __name__ == "__main__":
 		if not f.is_flagged():
 			print(f"{f.id} -- {f.name}")
 	print()
-
