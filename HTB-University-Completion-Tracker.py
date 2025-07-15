@@ -149,8 +149,11 @@ class HTB_Challenge(_HTB_BaseObject):
 		if str_categorie==None:
 			if not isinstance(categorie,int):
 				raise Error("Categorie should be an integer of the categorie id")
-			categories = ["Reverse","Crypto","","Pwn","Web","Misc","Forensic","Mobile","","Hardware","GamePwn","Blockchain","","","","","","","","","AI-ML", "Coding"]
-			self.categorie = categories[categorie-1]
+			categories = ["Reverse","Crypto","","Pwn","Web","Misc","Forensic","Mobile","","Hardware","GamePwn","Blockchain","","","","","","","","","AI-ML", "Coding", "ICS"]
+			if categorie < 1 or categorie > len(categories):
+				self.categorie = "Unknown"
+			else:
+				self.categorie = categories[categorie-1]
 		else:
 			self.categorie = str_categorie
 		CHALLENGES.append(self)
