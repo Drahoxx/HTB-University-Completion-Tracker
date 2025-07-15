@@ -305,6 +305,10 @@ class HTB_Univ_Fetcher():
 		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list"
 		fetch_res = self.__do_get(ENDPOINT)
 		for challenge in fetch_res["challenges"]:
+			# Debug: print category ID if it's unexpected
+			cat_id = challenge["challenge_category_id"]
+			if cat_id < 1 or cat_id > 22:
+				print(f"Warning: Unexpected category ID {cat_id} for challenge {challenge['name']}")
 			HTB_Challenge(challenge['id'],challenge["name"],False,challenge["difficulty"], categorie=challenge["challenge_category_id"])
 		"""
 		List Retired Challenges
@@ -312,6 +316,10 @@ class HTB_Univ_Fetcher():
 		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list/retired"
 		fetch_res = self.__do_get(ENDPOINT)
 		for challenge in fetch_res["challenges"]:
+			# Debug: print category ID if it's unexpected
+			cat_id = challenge["challenge_category_id"]
+			if cat_id < 1 or cat_id > 22:
+				print(f"Warning: Unexpected category ID {cat_id} for challenge {challenge['name']}")
 			HTB_Challenge(challenge['id'],challenge["name"],True,challenge["difficulty"], categorie=challenge["challenge_category_id"])
 
 	def fetch_all_machines(self):
@@ -425,3 +433,4 @@ if __name__ == "__main__":
 		if not f.is_flagged():
 			print(f"{f.id} -- {f.name}")
 	print()
+
