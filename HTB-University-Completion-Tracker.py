@@ -275,9 +275,9 @@ class HTB_Univ_Fetcher():
 		@Desc : List the members of a university (both active and pending / invited)
 		@Output : list(HTB_Player)
 		@Comments :
-			- curl --location 'https://www.hackthebox.com/api/v4/university/members/518' -H "Accept: application/json" -H "Authorization: Bearer $(cat api_htb.sec)" | jq
+			- curl --location 'https://labs.hackthebox.com/api/v4/university/members/518' -H "Accept: application/json" -H "Authorization: Bearer $(cat api_htb.sec)" | jq
 		"""
-		ENDPOINT = f"https://www.hackthebox.com/api/v4/university/members/{self.UNIV_NUMBER}"
+		ENDPOINT = f"https://labs.hackthebox.com/api/v4/university/members/{self.UNIV_NUMBER}"
 		fetch_res = self.__do_get(ENDPOINT)
 		univ_players = []
 		for user_infos in fetch_res:
@@ -292,7 +292,7 @@ class HTB_Univ_Fetcher():
 		@Input : HTB_Player
 		@Output : list(HTB_Player)
 		"""
-		ENDPOINT = f"https://www.hackthebox.com/api/v4/user/profile/activity/{player.id}"
+		ENDPOINT = f"https://labs.hackthebox.com/api/v4/user/profile/activity/{player.id}"
 		fetch_res = self.__do_get(ENDPOINT)
 		for activity in fetch_res["profile"]["activity"]:
 			if activity["object_type"] == "challenge":
@@ -309,7 +309,7 @@ class HTB_Univ_Fetcher():
 		"""
 		List Active Challenges
 		"""
-		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list"
+		ENDPOINT = "https://labs.hackthebox.com/api/v4/challenge/list"
 		fetch_res = self.__do_get(ENDPOINT)
 		logger.debug(f"Result for active challenge: {fetch_res}")
 		for challenge in fetch_res["challenges"]:
@@ -321,7 +321,7 @@ class HTB_Univ_Fetcher():
 		"""
 		List Retired Challenges
 		"""
-		ENDPOINT = "https://www.hackthebox.com/api/v4/challenge/list/retired"
+		ENDPOINT = "https://labs.hackthebox.com/api/v4/challenge/list/retired"
 		fetch_res = self.__do_get(ENDPOINT)
 		logger.debug(f"Result for retired challenge: {fetch_res}")
 		for challenge in fetch_res["challenges"]:
@@ -335,7 +335,7 @@ class HTB_Univ_Fetcher():
 		"""
 		List Active Machines
 		"""
-		base_endoint = "https://www.hackthebox.com/api/v4/machine/paginated?page="
+		base_endoint = "https://labs.hackthebox.com/api/v4/machine/paginated?page="
 		page_index = 1
 		while True:
 			ENDPOINT = base_endoint+str(page_index)
@@ -351,7 +351,7 @@ class HTB_Univ_Fetcher():
 		"""
 		List Retired Machines
 		"""
-		base_endoint = "https://www.hackthebox.com/api/v4/machine/list/retired/paginated?page="
+		base_endoint = "https://labs.hackthebox.com/api/v4/machine/list/retired/paginated?page="
 		page_index = 1
 		while True:
 			ENDPOINT = base_endoint+str(page_index)
@@ -369,7 +369,7 @@ class HTB_Univ_Fetcher():
 		"""
 		List fortresses
 		"""
-		ENDPOINT = "https://www.hackthebox.com/api/v4/fortresses"
+		ENDPOINT = "https://labs.hackthebox.com/api/v4/fortresses"
 		fetch_res = self.__do_get(ENDPOINT)
 		logger.debug(f"Result for fortress: {fetch_res}")
 		for fortress_pseudo_id in fetch_res["data"]:
