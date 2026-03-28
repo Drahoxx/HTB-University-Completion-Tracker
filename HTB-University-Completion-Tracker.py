@@ -366,14 +366,11 @@ class HTB_Univ_Fetcher():
 				break
 
 	def fetch_all_fortress(self):
-		"""
-		List fortresses
-		"""
 		ENDPOINT = "https://labs.hackthebox.com/api/v4/fortresses"
 		fetch_res = self.__do_get(ENDPOINT)
 		logger.debug(f"Result for fortress: {fetch_res}")
-		for fortress_pseudo_id in fetch_res["data"]:
-			HTB_Fortress(int(fetch_res["data"][fortress_pseudo_id]['id']),fetch_res["data"][fortress_pseudo_id]["name"])
+		for fortress in fetch_res["data"]:
+			HTB_Fortress(int(fortress['id']), fortress["name"])
 
 def sort_by_difficulty(c : _HTB_BaseObject) -> int:
 	l = ["Very Easy","Easy","Medium","Hard","Insane"]
